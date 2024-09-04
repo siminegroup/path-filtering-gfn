@@ -1,0 +1,60 @@
+seed: ${trial_id}
+trial_id: 0
+project_name: GFN-Potts-Boltzmann
+version: v0.0.1
+
+# Directories for loading and storing data
+data_dir: /home/jeremylm/scratch/gfn-potts/data/
+exp_name: potts
+job_name: null
+timestamp: ${now:%Y-%m-%d_%H-%M-%S}
+log_dir: ${data_dir}${exp_name}
+data_path: 'data/'
+num_samples: 20
+num_of_elements: 435
+prefix: "/home/jeremylm/scratch/gfn-potts/data/"
+
+hydra:
+  run:
+    dir: ${log_dir}
+  sweep:
+    dir: ${log_dir}
+    subdir: .
+
+dataset:
+  _target_: lib.dataset.dna.PottsDataset
+  path: /home/jeremylm/scratch/gfn-potts/data/training_set_numerical.mat
+
+tokenizer:
+  _target_: lib.utils.tokenizers.ToyTokenizer
+
+gfn:
+  random_action_prob: 0.1
+  max_len: 60 #72 #24
+  min_len: 60 #72 #24
+  batch_size: 20
+  reward_min: 1e-20
+  sampling_temp: 1
+  train_steps: 50000 #2000
+  pi_lr: 0.0001 #0.0001
+  z_lr: 0.1 #0.1
+  wd: 0.0001
+  gen_clip: 10
+  sample_beta: 1
+  eval_freq: 50
+  val_batch_size: 20
+  eval_batch_size: 20
+  eval_samples: 20
+  offline_gamma: 0
+  use_boltzmann: True
+  
+  model:
+    _target_: lib.model.transformer.GFNTransformer
+    max_len: 62 #74 #26 # needs to be at least other max_len+2
+    vocab_size: 9
+    num_actions: 5
+    num_hid: 128
+    num_layers: 6
+    num_head: 8
+    dropout: 0
+    partition_init: 32
